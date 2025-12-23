@@ -1,0 +1,308 @@
+/* frontend/src/components/HomePage/StyleHomePage.css */
+
+/* --- 1. Общий Макет (Layout) --- */
+
+.app-main-view {
+    min-height: 100vh; /* Контент растягивается, фон задаём внешним контейнером как в RegPage */
+}
+
+/* Палитра под RegPage / LogPage */
+body[data-theme="dark"] .app-main-view {
+    color: #e5e7eb;
+}
+
+body[data-theme="light"] .app-main-view {
+    color: #0f172a;
+}
+
+/* Контейнер для Sidebar + Content Area */
+.app-layout {
+    display: flex; 
+}
+
+.content-area {
+    flex-grow: 1; 
+    padding: 20px 40px; 
+    max-width: 1200px; /* Ограничиваем ширину контента */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.main-title {
+    font-size: 2em;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+body[data-theme="dark"] .main-title {
+    color: #f9fafb;
+}
+
+.theme-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Цвета по умолчанию для светлой темы */
+    background-color: #111827;
+    color: #f9fafb;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: #020617;
+    transform: translateY(-1px);
+}
+
+/* В тёмной теме делаем кнопку светлой, как на RegPage/LogPage */
+body[data-theme="dark"] .theme-toggle-btn {
+    background-color: #e5e7eb;
+    color: #020617;
+}
+
+body[data-theme="dark"] .theme-toggle-btn:hover {
+    background-color: #ffffff;
+}
+
+.refresh-button {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.refresh-button:hover {
+    background-color: #f0f0f0;
+}
+
+body[data-theme="dark"] .refresh-button {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+/* --- 2. Секция Dashboard --- */
+.dashboard-section {
+    display: flex;
+    gap: 30px;
+}
+
+.course-list {
+    flex: 3; /* Курсы занимают большую часть ширины */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.welcome-banner {
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+}
+
+.welcome-name {
+    font-weight: 600;
+}
+
+body[data-theme="dark"] .welcome-banner {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+/* --- 3. Карточка Курса --- */
+.course-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    text-decoration: none; /* Убираем подчеркивание у ссылки */
+    color: inherit; /* Наследуем цвет текста */
+    transition: box-shadow 0.2s;
+}
+
+.course-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.4em;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.card-description {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.card-meta {
+    font-size: 0.8em;
+    color: #999;
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.price-status {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+
+.price-status.free {
+    color: #008000; /* Зеленый для Free */
+    background-color: #e6ffe6;
+}
+
+.price-status.paid {
+    color: #333; /* Черный для Paid */
+    background-color: #ccc;
+}
+
+/* --- 4. Прогресс-бар --- */
+.card-progress {
+    background-color: #eee;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #000; /* Монохромный прогресс */
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* --- 5. Блок Серии/Цели (Streak Box) --- */
+.streak-box {
+    flex: 1; /* Занимает оставшуюся ширину */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    height: fit-content; /* Ограничивает высоту по содержимому */
+    min-width: 250px;
+}
+
+.streak-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.streak-icon {
+    font-size: 1.2em;
+    margin-right: 10px;
+}
+
+.streak-title {
+    font-weight: bold;
+    color: #000;
+}
+
+body[data-theme="dark"] .streak-title {
+    color: #f9fafb;
+}
+
+.streak-days {
+    font-size: 0.8em;
+    color: #999;
+    margin-bottom: 15px;
+}
+
+.daily-goal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.goal-status {
+    font-size: 0.9em;
+    color: #333;
+}
+
+.start-button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.start-button:hover {
+    background-color: #333;
+}
+
+/* Тёмная палитра под RegPage */
+body[data-theme="dark"] .course-card,
+body[data-theme="dark"] .streak-box {
+    background-color: #111827;
+    border-color: #1f2937;
+    color: #e5e7eb;
+}
+
+body[data-theme="dark"] .card-title {
+    color: #f9fafb;
+}
+
+body[data-theme="dark"] .card-description,
+body[data-theme="dark"] .card-meta,
+body[data-theme="dark"] .progress-text,
+body[data-theme="dark"] .streak-days,
+body[data-theme="dark"] .goal-status {
+    color: #9ca3af;
+}
+
+body[data-theme="dark"] .progress-bar {
+    background-color: #f97316; /* тёплый акцент как в формах */
+}
+
+body[data-theme="dark"] .start-button {
+    background-color: #f97316;
+    color: #111827;
+}
+
+body[data-theme="dark"] .start-button:hover {
+    background-color: #ea580c;
+}
