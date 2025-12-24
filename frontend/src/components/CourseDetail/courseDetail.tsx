@@ -25,6 +25,7 @@ interface CourseDetailData {
     id: number;
     title: string;
     description: string;
+    price?: number;
     questions: Question[];
 }
 
@@ -50,22 +51,45 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
     const [activeQuestionIndex, setActiveQuestionIndex] = useState<number | null>(null);
     const [selectedAnswerId, setSelectedAnswerId] = useState<number | null>(null);
     const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+    const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+    const [lastResult, setLastResult] = useState<{ correct: number; total: number } | null>(null);
+    const [isEnrolled, setIsEnrolled] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
+    const [paymentProcessing, setPaymentProcessing] = useState(false);
 
     useEffect(() => {
         const fetchCourse = async () => {
             try {
                 const base = API_URL.replace(/\/$/, '');
                 const response = await axios.get<CourseDetailData>(`${base}/api/v1/course/${id}`);
-                setCourse(response.data);
+                const courseData = response.data;
+                setCourse(courseData);
                 // Если пользователь уже начинал этот курс — восстановим позицию из localStorage
                 const userStr = localStorage.getItem("currentUser");
                 if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
+                        // Проверяем, записан ли пользователь на курс (через API)
+                        axios.get(`${base}/api/v1/users/${user.id}/courses`)
+                            .then(res => {
+                                if (Array.isArray(res.data) && res.data.some((c: any) => c.id === courseData.id)) {
+                                    setIsEnrolled(true);
+                                }
+                            })
+                            .catch(() => {});
+
                         const progMap = user.enrolledProgress || {};
-                        const saved = progMap[String(response.data.id)];
+                        const saved = progMap[String(courseData.id)];
                         if (saved && typeof saved.currentIndex === 'number') {
-                            setActiveQuestionIndex(saved.currentIndex);
+                            // Если курс завершен, показываем результат
+                            if (saved.currentIndex >= courseData.questions.length && typeof saved.correctAnswers === 'number') {
+                                setLastResult({ correct: saved.correctAnswers, total: courseData.questions.length });
+                            } else if (saved.currentIndex < courseData.questions.length) {
+                                setActiveQuestionIndex(saved.currentIndex);
+                            }
+                            if (typeof saved.correctAnswers === 'number') {
+                                setCorrectAnswersCount(saved.correctAnswers);
+                            }
                         }
                     } catch (e) {
                         console.warn('Не удалось восстановить прогресс из localStorage', e);
@@ -103,6 +127,7 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
                         progMap[String(course.id)] = { currentIndex: 0, progress_percentage: 0 };
                         const updatedUser = { ...user, enrolledCourseIds: enrolledIds, enrolledProgress: progMap };
                         localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+                        setIsEnrolled(true);
                     } catch (e2) {
                         // Если не можем вбить с бэкенда — всё равно сохраним локально
                         const progMap = (JSON.parse(userStr).enrolledProgress || {});
@@ -115,17 +140,51 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
                 }
             }
 
+            setCorrectAnswersCount(0);
             setActiveQuestionIndex(0);
             setIsAnswerChecked(false);
             setSelectedAnswerId(null);
+            setLastResult(null); // Сбрасываем предыдущий результат
         } else {
             alert("В этом курсе пока нет вопросов.");
         }
     };
 
+    const handleStartClick = () => {
+        if (!course) return;
+        if (course.questions.length === 0) {
+            alert("В этом курсе пока нет вопросов.");
+            return;
+        }
+        // Если курс бесплатный, пользователь уже записан или уже проходил его — начинаем сразу
+        if (isEnrolled || !course.price || course.price === 0 || lastResult) {
+            startLearning();
+        } else {
+            // Иначе показываем окно оплаты
+            setShowPayment(true);
+        }
+    };
+
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPaymentProcessing(true);
+        // Имитация задержки обработки платежа
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setPaymentProcessing(false);
+        setShowPayment(false);
+        startLearning();
+    };
+
     const checkAnswer = () => {
         if (selectedAnswerId !== null) {
             setIsAnswerChecked(true);
+            if (course && activeQuestionIndex !== null) {
+                const question = course.questions[activeQuestionIndex];
+                const answer = question.answers.find(a => a.id === selectedAnswerId);
+                if (answer?.is_correct) {
+                    setCorrectAnswersCount(prev => prev + 1);
+                }
+            }
         }
     };
 
@@ -142,7 +201,7 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
                         const user = JSON.parse(userStr);
                         const progMap = user.enrolledProgress || {};
                         const percent = Math.round(((nextIndex) / course.questions.length) * 100);
-                        progMap[String(course.id)] = { currentIndex: nextIndex, progress_percentage: percent };
+                        progMap[String(course.id)] = { currentIndex: nextIndex, progress_percentage: percent, correctAnswers: correctAnswersCount };
                         const updatedUser = { ...user, enrolledProgress: progMap };
                         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
 
@@ -158,14 +217,17 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
                 setIsAnswerChecked(false);
                 setSelectedAnswerId(null);
             } else {
-                alert("Курс завершен! Поздравляем!");
+                const finalCorrect = correctAnswersCount;
+                const totalQuestions = course.questions.length;
+                setLastResult({ correct: finalCorrect, total: totalQuestions });
+
                 // Отметим курс как завершённый (100%)
                 const userStr = localStorage.getItem('currentUser');
                 if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
                         const progMap = user.enrolledProgress || {};
-                        progMap[String(course.id)] = { currentIndex: course.questions.length, progress_percentage: 100 };
+                        progMap[String(course.id)] = { currentIndex: course.questions.length, progress_percentage: 100, correctAnswers: correctAnswersCount };
                         const updatedUser = { ...user, enrolledProgress: progMap };
                         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                         axios.post(`${base}/api/v1/users/${user.id}/courses/${course.id}/progress`, {
@@ -212,7 +274,25 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
                                     <div className="course-header-block">
                                         <h1 className="course-title-large">{course.title}</h1>
                                         <p className="course-description-large">{course.description}</p>
-                                        <button className="start-course-btn" onClick={startLearning}>Начать обучение</button>
+                                        {course.price !== undefined && (
+                                            <p className="course-description-large" style={{ fontWeight: 'bold' }}>
+                                                {course.price > 0 ? `Цена: ${course.price} ₽` : 'Бесплатно'}
+                                            </p>
+                                        )}
+                                        
+                                        {lastResult && (
+                                            <div className="course-result-block">
+                                                <h2 className="result-title">Ваш последний результат</h2>
+                                                <div className="result-stats">
+                                                    <p>✅ Правильных ответов: {lastResult.correct} из {lastResult.total}</p>
+                                                    <p>❌ Неправильных ответов: {lastResult.total - lastResult.correct}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <button className="start-course-btn" onClick={handleStartClick}>
+                                            {lastResult ? 'Пройти еще раз' : 'Начать обучение'}
+                                        </button>
                                     </div>
 
                                     <div className="lessons-list-section">
@@ -281,6 +361,32 @@ function CourseDetail({ theme, toggleTheme }: CourseDetailProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Модальное окно оплаты */}
+            {showPayment && course && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2 style={{marginTop: 0}}>Оплата курса</h2>
+                        <p style={{marginBottom: '1rem', color: isDarkTheme ? '#9ca3af' : '#666'}}>
+                            Вы покупаете курс <strong>«{course.title}»</strong>
+                        </p>
+                        <div style={{fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>
+                            {course.price} ₽
+                        </div>
+                        <form onSubmit={handlePaymentSubmit} className="payment-form">
+                            <input className="payment-input" placeholder="Номер карты (0000 0000 0000 0000)" required pattern="\d*" minLength={16} />
+                            <div className="payment-row">
+                                <input className="payment-input" placeholder="MM/YY" required style={{width: '50%'}} />
+                                <input className="payment-input" placeholder="CVC" required maxLength={3} style={{width: '50%'}} />
+                            </div>
+                            <button type="submit" className="pay-confirm-btn" disabled={paymentProcessing}>
+                                {paymentProcessing ? 'Обработка...' : `Оплатить ${course.price} ₽`}
+                            </button>
+                            <button type="button" className="pay-cancel-btn" onClick={() => setShowPayment(false)}>Отмена</button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

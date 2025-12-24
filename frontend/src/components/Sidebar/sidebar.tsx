@@ -14,7 +14,7 @@ import './StyleSidebar.css';
 // Данные для навигации
 type NavItem = { title: string; icon: IconType; path: string; special?: boolean };
 const navItems: NavItem[] = [
-    { title: 'Моё обучение', icon: FiUser, path: '/', special: true },
+    { title: 'Моё обучение', icon: FiUser, path: '/' },
     { title: 'Каталог', icon: FiBookOpen, path: '/catalog' },
     { title: 'Преподавание', icon: FiEdit3, path: '/create-course' },
 ];

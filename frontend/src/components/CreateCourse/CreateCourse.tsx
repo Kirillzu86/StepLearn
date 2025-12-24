@@ -16,6 +16,7 @@ function CreateCourse({ theme, toggleTheme }: CreateCourseProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [totalLessons, setTotalLessons] = useState<number>(0);
+  const [price, setPrice] = useState<number>(0);
   const [priceStatus, setPriceStatus] = useState("Free");
   const [questions, setQuestions] = useState<Array<{ text: string; answers: Array<{ text: string; is_correct: boolean }> }>>([]);
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,7 @@ function CreateCourse({ theme, toggleTheme }: CreateCourseProps) {
         title: title.trim(),
         description: description.trim(),
         total_lessons: totalLessons || questions.length || 0,
+        price: price,
         price_status: priceStatus,
         questions: questions.map(q => ({
           text: q.text,
@@ -135,6 +137,11 @@ function CreateCourse({ theme, toggleTheme }: CreateCourseProps) {
                 <div className="input-group">
                   <label>Описание</label>
                   <textarea value={description} onChange={e => setDescription(e.target.value)} className="form-input" rows={6} />
+                </div>
+
+                <div className="input-group">
+                  <label>Цена (руб.)</label>
+                  <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} className="form-input" />
                 </div>
 
                 <div className="input-group">

@@ -12,6 +12,7 @@ interface Course {
   title: string;
   description: string;
   rating?: number;
+  price?: number;
   students_count?: number;
   price_status?: string;
   total_lessons?: number;
@@ -27,7 +28,13 @@ function CourseCard({ course }: { course: Course }) {
       <div className="card-meta">
         <span>⭐ {Number(course.rating || 0).toFixed(1)}</span>
         <span>👤 {(course.students_count || 0).toLocaleString()}</span>
-        <span className={`price-status ${String((course.price_status || "")).toLowerCase()}`}>{course.price_status}</span>
+        {course.price_status === 'Enrolled' ? (
+            <span className="price-status enrolled">Вы записаны</span>
+        ) : (
+            <span className={`price-status ${course.price && course.price > 0 ? 'paid' : 'free'}`}>
+                {course.price && course.price > 0 ? `${course.price} ₽` : 'Бесплатно'}
+            </span>
+        )}
       </div>
       {typeof course.progress_percentage === "number" && (
         <>

@@ -2,7 +2,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', 'Poppins', sans-serif;
 }
 
 .profile-content {
@@ -286,5 +285,3 @@ body[data-theme="dark"] .profile-button-secondary:hover {
     flex-direction: column;
   }
 }
-
-

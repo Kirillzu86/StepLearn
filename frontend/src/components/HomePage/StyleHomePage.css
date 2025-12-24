@@ -187,6 +187,11 @@ body[data-theme="dark"] .welcome-banner {
     background-color: #ccc;
 }
 
+.price-status.enrolled {
+    color: #0056b3;
+    background-color: #e0f2ff;
+}
+
 /* --- 4. Прогресс-бар --- */
 .card-progress {
     background-color: #eee;

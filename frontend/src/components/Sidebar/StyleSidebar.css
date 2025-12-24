@@ -1,7 +1,6 @@
 .sidebar-container {
     width: 250px;
     padding: 10px 0;
-    font-family: Arial, sans-serif;
     background-color: #fff; 
     border-right: 1px solid #ccc;
     min-height: 100vh; 
@@ -135,7 +134,7 @@ body[data-theme="dark"] .nav-item:hover {
 }
 
 body[data-theme="dark"] .nav-item-special {
-    color: #f97316;
+    color: #e5e7eb;
 }
 
 body[data-theme="dark"] .nav-item-active {

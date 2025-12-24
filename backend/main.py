@@ -37,6 +37,11 @@ def init_db() -> None:
             cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT")
         except Exception:
             pass
+        # Ensure price column exists in courses
+        try:
+            cur.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS price INTEGER DEFAULT 0")
+        except Exception:
+            pass
         # --- Новые таблицы для курсов ---
         cur.execute(
             """
@@ -174,6 +179,7 @@ class Question(QuestionBase):
 class CourseBase(BaseModel):
     title: str
     description: str | None = None
+    price: int = 0
 
 class CourseCreate(CourseBase):
     questions: list[QuestionBase]
@@ -261,7 +267,7 @@ def get_user_courses(user_id: int):
     try:
         with get_cursor() as cur:
             cur.execute("""
-                SELECT c.id, c.title, c.description 
+                SELECT c.id, c.title, c.description, c.price 
                 FROM courses c
                 JOIN user_courses uc ON c.id = uc.course_id
                 WHERE uc.user_id = %s
@@ -271,6 +277,7 @@ def get_user_courses(user_id: int):
                     "id": row[0], 
                     "title": row[1], 
                     "description": row[2],
+                    "price": row[3],
                     # Добавляем заглушки, чтобы соответствовать интерфейсу на фронтенде
                     "rating": 4.5,
                     "students_count": 123,
@@ -297,11 +304,11 @@ def list_courses(q: str | None = None):
         if q and q.strip():
             pattern = f"%{q.strip()}%"
             cur.execute(
-                "SELECT id, title, description FROM courses WHERE title ILIKE %s OR description ILIKE %s",
+                "SELECT id, title, description, price FROM courses WHERE title ILIKE %s OR description ILIKE %s",
                 (pattern, pattern),
             )
         else:
-            cur.execute("SELECT id, title, description FROM courses")
+            cur.execute("SELECT id, title, description, price FROM courses")
 
         for row in cur.fetchall():
             # Временные заглушки для полей, которых пока нет в БД
@@ -309,6 +316,7 @@ def list_courses(q: str | None = None):
                 "id": row[0],
                 "title": row[1],
                 "description": row[2],
+                "price": row[3],
                 "rating": 4.5,
                 "students_count": 0,
                 "price_status": "Free",
@@ -420,8 +428,8 @@ def create_course(course_data: CourseCreate):
         with conn.cursor() as cur:
             # 1. Создаем курс
             cur.execute(
-                "INSERT INTO courses (title, description) VALUES (%s, %s) RETURNING id",
-                (course_data.title, course_data.description)
+                "INSERT INTO courses (title, description, price) VALUES (%s, %s, %s) RETURNING id",
+                (course_data.title, course_data.description, course_data.price)
             )
             course_id = cur.fetchone()[0]
 
@@ -440,7 +448,7 @@ def create_course(course_data: CourseCreate):
                     )
         
         conn.commit()
-        return Course(id=course_id, title=course_data.title, description=course_data.description)
+        return Course(id=course_id, title=course_data.title, description=course_data.description, price=course_data.price)
 
     except Exception:
         conn.rollback()
@@ -456,12 +464,12 @@ def get_course(course_id: int):
     try:
         with get_cursor() as cur:
             # Получаем основную информацию о курсе
-            cur.execute("SELECT id, title, description FROM courses WHERE id = %s", (course_id,))
+            cur.execute("SELECT id, title, description, price FROM courses WHERE id = %s", (course_id,))
             course_row = cur.fetchone()
             if not course_row:
                 raise HTTPException(status_code=404, detail="Курс не найден")
 
-            course_result = {"id": course_row[0], "title": course_row[1], "description": course_row[2], "questions": []}
+            course_result = {"id": course_row[0], "title": course_row[1], "description": course_row[2], "price": course_row[3], "questions": []}
 
             # Получаем все вопросы для этого курса
             cur.execute("SELECT id, text FROM questions WHERE course_id = %s ORDER BY id", (course_id,))

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../api/api";
 import Header from "../Header/Header";
+import Sidebar from "../Sidebar/sidebar";
+import "../HomePage/StyleHomePage.css";
+import "../Sidebar/StyleSidebar.css";
 import "./StyleProfile.css";
 
 interface ProfileProps {
@@ -25,6 +28,7 @@ function Profile(props: ProfileProps) {
   const [message, setMessage] = useState({ text: "", type: "" });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDarkTheme = props.theme === "dark";
 
   // Ensure `theme` prop is observed to avoid unused-destructuring/build errors
   useEffect(() => {
@@ -169,11 +173,27 @@ function Profile(props: ProfileProps) {
     }
   };
 
+  const backgroundStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    backgroundColor: isDarkTheme ? "#030712" : "#f8fafc",
+    backgroundImage: isDarkTheme
+      ? "radial-gradient(circle at 50% 0%, #3b82f640, #030712 35%)"
+      : "radial-gradient(circle at 50% 0%, #e2e8f040, #f8fafc 35%)",
+    animation: "pulse-spotlight 15s infinite ease-in-out",
+  };
+
   if (loading) {
     return (
-      <div className="profile-container">
-        <Header />
-        <div className="profile-loading">Загрузка...</div>
+      <div style={backgroundStyle}>
+        <div className="app-main-view">
+          <Header />
+          <div className="app-layout">
+            <Sidebar />
+            <div className="content-area">
+              <div className="profile-loading">Загрузка...</div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -186,11 +206,18 @@ function Profile(props: ProfileProps) {
   const displayInitial = displayName.charAt(0).toUpperCase();
 
   return (
-    <div className="profile-container">
-      <Header />
-      <div className="profile-content">
+    <div style={backgroundStyle}>
+      <div className="app-main-view">
+        <Header />
+        <div className="app-layout">
+          <Sidebar />
+          <div className="content-area">
+            <div className="content-header">
+              <h1 className="main-title">Профиль</h1>
+              <button className="theme-toggle-btn" onClick={props.toggleTheme} />
+            </div>
+            <div className="profile-content" style={{ marginTop: 0 }}>
         <div className="profile-card">
-          <h1 className="profile-title">Профиль пользователя</h1>
 
           {message.text && (
             <div className={`profile-message profile-message-${message.type}`}>
@@ -267,11 +294,12 @@ function Profile(props: ProfileProps) {
             </div>
           </div>
         </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 export default Profile;
-
-
