@@ -10,9 +10,14 @@ services:
       POSTGRES_DB: Stepik
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: always
     depends_on:
       - db
     environment:
@@ -21,15 +26,23 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
       POSTGRES_PORT: 5432
+    networks:
+      - app-network
 
   nginx:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "5000:80"
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: always
     depends_on:
       - backend
+    # Порты убраны. В Coolify в поле Domains напиши http://твой_ip
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   pgdata:
