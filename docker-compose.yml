@@ -39,8 +39,6 @@ services:
     # Порты убраны. В Coolify в поле Domains напиши http://твой_ip
     networks:
       - app-network
-    ports:
-      - "5000:80"
 
 networks:
   app-network:
