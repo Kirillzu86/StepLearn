@@ -14,7 +14,7 @@ services:
       - app-network
 
   backend:
-    build:
+    build: ./backend
       context: .
       dockerfile: backend/Dockerfile
     restart: always
