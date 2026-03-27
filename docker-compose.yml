@@ -36,6 +36,8 @@ services:
     restart: always
     depends_on:
       - backend
+    labels:
+      - "coolify.port=80"
     # Порты убраны. В Coolify в поле Domains напиши http://твой_ip
     networks:
       - app-network
