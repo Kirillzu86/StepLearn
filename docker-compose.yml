@@ -39,12 +39,15 @@ services:
     # Порты убраны. В Coolify в поле Domains напиши http://твой_ip
     networks:
       - app-network
+      - coolify
     labels:
       - "coolify.port=80"
 
 networks:
   app-network:
     driver: bridge
+  coolify:
+    external: true
 
 volumes:
   pgdata:
