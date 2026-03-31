@@ -129,10 +129,6 @@ def init_db() -> None:
         if conn:
             conn.close()
 
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -579,3 +575,7 @@ def login(payload: LoginRequest):
             cur.close()
         if conn:
             conn.close()
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
