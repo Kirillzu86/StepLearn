@@ -242,7 +242,7 @@ def get_users():
         if conn:
             conn.close()
 
-@app.post("/api/v1/enroll")
+@app.post("/v1/enroll")
 def enroll_user(payload: EnrollRequest):
     """Записывает пользователя на курс."""
     conn = get_connection()
@@ -260,7 +260,7 @@ def enroll_user(payload: EnrollRequest):
     finally:
         conn.close()
 
-@app.get("/api/v1/users/{user_id}/courses")
+@app.get("/v1/users/{user_id}/courses")
 def get_user_courses(user_id: int):
     """Возвращает список курсов, на которые записан пользователь."""
     courses = []
@@ -292,7 +292,7 @@ def get_user_courses(user_id: int):
         raise HTTPException(status_code=500, detail="Ошибка получения курсов пользователя")
 
 
-@app.get("/api/v1/courses")
+@app.get("/v1/courses")
 def list_courses(q: str | None = None):
     """Возвращает список курсов из БД.
 
@@ -327,7 +327,7 @@ def list_courses(q: str | None = None):
     return courses
 
 
-@app.get("/api/v1/users/{user_id}", response_model=User)
+@app.get("/v1/users/{user_id}", response_model=User)
 def get_user(user_id: int):
     conn = None
     cur = None
@@ -351,7 +351,7 @@ def get_user(user_id: int):
             conn.close()
 
 
-@app.put("/api/v1/users/{user_id}", response_model=User)
+@app.put("/v1/users/{user_id}", response_model=User)
 def update_user(user_id: int, user_data: UserUpdate):
     conn = None
     cur = None
@@ -420,7 +420,7 @@ def update_user(user_id: int, user_data: UserUpdate):
             conn.close()
 
 
-@app.post("/api/v1/courses", response_model=Course)
+@app.post("/v1/courses", response_model=Course)
 def create_course(course_data: CourseCreate):
     """Создает новый курс, его вопросы и ответы в БД."""
     conn = get_connection()
@@ -458,7 +458,7 @@ def create_course(course_data: CourseCreate):
         conn.close()
 
 
-@app.get("/api/v1/course/{course_id}", response_model=CourseWithQuestions)
+@app.get("/v1/course/{course_id}", response_model=CourseWithQuestions)
 def get_course(course_id: int):
     """Возвращает полную информацию о курсе с вопросами и ответами."""
     try:
